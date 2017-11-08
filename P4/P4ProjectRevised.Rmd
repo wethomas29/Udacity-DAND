@@ -1,0 +1,552 @@
+
+
+P4 Project by William Thomas
+========================================================
+
+The purpose of this project is to use exploratory data analysis techniques which
+is required by Udacity's Data Analyst Nanodegree requirements of the red wine dataset. Before this project, I had no previous knowledge of red wine and the specific criteria that recognizes it as good or bad quality. The dataset can be downloaded here(https://docs.google.com/document/d/1qEcwltBMlRYZT-l699-71TzInWfk4W9q5rTCSvDVMpc/pub?embedded=true). This project will include the red wine dataset for analysis by exploring the relationships between different variables.
+
+
+```{r echo=FALSE, message=FALSE, warning=FALSE, packages}
+# Load all of the packages that you end up using in your analysis in this code
+# chunk.
+
+# Notice that the parameter "echo" was set to FALSE for this code chunk. This
+# prevents the code from displaying in the knitted HTML output. You should set
+# echo=FALSE for all code chunks in your file, unless it makes sense for your
+# report to show the code that generated a particular plot.
+
+# The other parameters for "message" and "warning" should also be set to FALSE
+# for other code chunks once you have verified that each plot comes out as you
+# want it to. This will clean up the flow of your report.
+
+
+```
+
+```{r echo=FALSE, Load_the_Data}
+# Load the Data
+getwd()
+
+redInfo <- read.csv("wineQualityReds.csv")
+
+
+#Load Packages
+
+library(ggplot2)
+library(corrplot)
+library(GGally)
+library(scales)
+library(GGally)
+library(RColorBrewer)
+library(gridExtra)
+
+```
+
+
+# Univariate Plots Section
+
+
+```{r echo=FALSE, Univariate_Plots}
+str(redInfo)
+summary(redInfo)
+```
+
+```{r echo=FALSE, Univariate_Plots2}
+#Summary and Histogram of Fixed Acidity
+summary(redInfo$fixed.acidity)
+qplot(x = fixed.acidity, data = redInfo,
+      binwidth = .20, xlab = 'Fixed Acidity',
+      main = 'Fixed Acidity Histogram',
+      color = I('gold'), fill = I('purple')) +
+  scale_x_continuous(limits = c(4,13), 
+                     breaks = seq(4,13,.5))
+```
+
+
+Fixed Acidity has a mean of 8.32 and a median of 7.90. The histogram seems to be somewhat distributed to the right. The max fixed Acidity was 15.90, an outlier, which was taken out of the data set when plotting histogram.
+
+```{r echo=FALSE, Univariate_Plots3}
+#Summary and Histogram of Volatile Acidity
+summary(redInfo$volatile.acidity)
+qplot(x = volatile.acidity, data = redInfo,
+      binwidth = .01, xlab = 'Volatile Acidity',
+      main = 'Vaolatile Acidity Histogram',
+      color = I('gold'), fill = I('purple')) +
+  scale_x_continuous(limits = c(0,1), 
+                     breaks = seq(0,1,.05))
+```
+
+
+Volatile Acidity has a mean of .5278 and a median of .5200. The data is spread out from 0 to 1 with a sequence of .05. The max Volatile Acidity was 1.58, an outlier, which was taken out of the data set when plotting histogram. Volatile acidity refers to the organic acids found in grape juice, musts and wine that are more volatile or more easily vaporized than the non-volatile or fixed acids 
+
+```{r echo=FALSE, Univariate_Plots4}
+#Summary and Histogram of Citric Acid
+summary(redInfo$citric.acid)
+qplot(x = citric.acid, data = redInfo, 
+      binwidth = .05, xlab = 'Citric Acid',
+      main = 'Citric Acid Histogram',
+      color = I('gold'), fill = I('purple')) +
+  scale_x_continuous(limits = c(0,1), 
+                     breaks = seq(0,1,.05))
+```
+
+
+This histogram shows that Citric Acid has regualr peaks and valleys.The average citric acid in the dataset is .271 and the median .271. Citric acid adds sweetness to red wine.
+
+```{r echo=FALSE, Univariate_Plots5}
+#Summary and Histogram of Quality
+
+summary(redInfo$quality)
+qplot( x = quality,  data = redInfo,
+       binwidth = 1, xlab = 'Quality',
+       main = 'Quality Score Histogram',
+     color = I('gold'), fill = I('purple'))  
+
+#Quality into 3 subqualities: poor, average, excellent. 
+
+ q_rating <- ifelse(redInfo$quality < 5, 'poor',ifelse(redInfo$quality < 7, 'average', 
+  ifelse(redInfo$quality > 6, 'excellent', 'none')))
+
+#Ordering the subqualities from poor, average, excellent
+q_rating<- ordered(q_rating, 
+                   levels = c('poor', 'average', 'excellent'))
+
+summary(q_rating)
+
+qplot(q_rating, xlab="Quality Rating",
+      main = 'Quality Rating',
+      color = I('gold'), 
+      fill = I('purple'))
+```
+
+
+The average quality score for red wine is 5.64 and the median is 6. Scores 5 and 6 are dominated the wine quality scores. 5 and 6 are considered average scores and dominate the histogram. Most wine judgers gave an average score to the red wine recorded in this data set.
+
+```{r echo=FALSE, Univariate_Plots6}
+#Summary and Histogram of Alcohol
+summary(redInfo$alcohol)
+qplot(x = alcohol, data = redInfo,
+      binwidth = .50, xlab= 'Alcohol[%]',
+      main = 'Alcohol Percentage Histogram',
+      color = I('gold'), fill = I('purple')) +
+  scale_x_continuous(limits = c(8,15),
+                     breaks = seq(8,15,.5))
+```
+
+
+The majority of red wine in the dataset have an alcohol % of 9.5%. The average amount of alcohol in red wine is 10.42. The histogram seems distributed to the rightly skewed.
+
+```{r echo=FALSE, Univariate_Plots7}
+#Summary and histogram of Sulphates
+summary(redInfo$sulphates)
+qplot(x = sulphates, data = redInfo, binwidth = .10,
+      color = I('gold'), fill = I('purple'),
+      main = 'Sulphates Histogram')  +
+  scale_x_continuous(limits = c(.3,2), 
+                     breaks = seq(.3,2,.1))
+```
+
+
+Rightly skewed histogram. The average amount of sulphates according to the summary is .6581 while the median is .6200.The term sulfites is an inclusive term for sulfur dioxide (SO2), a preservative that's widely used in winemaking (and most food industries) for its antioxidant and antibacterial properties.
+
+```{r echo=FALSE, Univariate_Plots8}
+#Summary and Histogram of pH
+summary(redInfo$pH)
+qplot(x = pH, data = redInfo, binwidth = .10,
+      main = 'pH Histogram',
+      color = I('yellow'), fill = I('purple'))  +
+  scale_x_continuous(limits = c(2.5,4),
+                     breaks = seq(2.5,4,.1))
+```
+
+
+pH seems normally distributed. The average for pH is 3.311 while the median is 3.310.
+
+```{r echo=FALSE, Univariate_Plots9}
+#Summary and Histogram of Density
+summary(redInfo$density)
+qplot(x = density, data = redInfo,
+      binwidth = .001,
+      color = I('gold'), fill = I('purple'),
+      main = 'Density Histogram') +
+  scale_x_continuous(limits = c(.990,1.005), breaks = seq(.990,1.005,.001))
+```
+
+Normally distributed histogram. The mean for density is .9967 and the median is .9968.Density of wine is a measure of the conversion of sugar to alcohol. The must, with sugar but no alcohol, has a high density. 
+
+
+```{r echo=FALSE, Univariate_Plots10}
+#Summary and Histogram of Total Sulfur Dioxide
+summary(redInfo$total.sulfur.dioxide)
+qplot(x = total.sulfur.dioxide, data = redInfo, 
+      binwidth = 5, 
+      xlab ='Total Sulfur Dioxide',
+      main = 'Total Sulfur Dioxide Histogram',
+      color = I('gold'), fill = I('purple'))  +
+  scale_x_continuous(limits = c(0,180), 
+                breaks = seq(0,180,10))
+```
+
+Rightly skewed histogram. Total sulfur dioxide had a mean of 46.67 but a median of 38. The max total sulfur dioxide measure was 289, an outlier. Sulfur dioxide (SO2) is important in the winemaking process as it aids in preventing microbial growth and the oxidation of wine.
+
+```{r echo=FALSE, Univariate_Plots11}
+#Summary and Histogram of Free Sulfur Dioxide
+summary(redInfo$free.sulfur.dioxide)
+qplot(x = free.sulfur.dioxide, data = redInfo, 
+      binwidth = 5,
+      xlab = 'Free Sulfur Dioxide',
+      main = 'Free Sulfur Dioxide Histogram',
+      color = I('gold'), fill = I('purple'))  +
+  scale_x_continuous(limits = c(0,75), 
+                     breaks = seq(0,75,5))
+```
+
+Rightly skewed histogram. Free sulfur dioxide had a mean of 15.87 but a median of 14. The max free sulfur dioxide measure was 72, an outlier. Sulfur dioxide (SO2) is important in the winemaking process as it aids in preventing microbial growth and the oxidation of wine.
+
+```{r echo=FALSE, Univariate_Plots12}
+#Summary and Histogram of Chlorides
+summary(redInfo$chlorides)
+qplot(x = chlorides, data = redInfo,
+      main = 'Chlorides Histogram',
+      color = I('gold'), fill = I('purple')) 
+
+qplot(x = chlorides, data = redInfo, binwidth =.001,
+      color = I('gold'), fill = I('purple'),
+      main = 'Chlorides Histogram (Closely Distributed)') +
+  scale_x_continuous(limits = c(0,.15), 
+                     breaks = seq(0,.15,.05)) 
+```
+
+
+Chlorides had a smaller median than average. It had a median of .07900 and a mean of .08747. I decided to use scale_x_continuous to limit the axis from 0 to .15, which shows them more normally distributed. 
+
+```{r echo=FALSE, Univariate_Plots13} 
+#Summary and Histogram of Residual Sugar
+
+summary(redInfo$residual.sugar)
+qplot(x = residual.sugar, data = redInfo, 
+      binwidth = .1, xlab= 'Residual Sugar',
+      main = 'Residual Sugar Histogram',
+      color = I('gold'), fill = I('purple')) +
+  scale_x_continuous(limits = c(0,7), 
+                     breaks = seq(0,10,.5))
+
+
+
+```
+
+Residual sugar seems rightly skewed with a median of 2.2 and a mean of 2.539. The max measure for this variable is 15.5, an outlier. The amount of residual sugar refers to any natural grape sugars that are leftover after fermentation ceases.
+
+# Univariate Analysis
+
+
+### What is the structure of your dataset?
+My dataset has 1599 observations and 13 variables. The variable X is actually a unique identifier in the dataset instead of a measure for red wine. There are 12 measurement variables
+overall: **residual.sugar,density,alcohol,chlorides,free.sulfur.dioxide,pH,sulphates,quality, citric.acid,quality, fixed.acidity, and volatile.acidity**
+
+Other Observations:
+The best quality ranges are 7 and above. Most quality ratings fall around 5 or 6 according to the histogram.
+
+Alcohol content tends to be on the lower end of the disstribution as most have a percentage of 9.5%
+
+Chlorides are closely distributed.
+
+Total.sulfur.dioxide has a median of 38 and a mean of 46.67
+
+### What is/are the main feature(s) of interest in your dataset?
+The main feature of this dataset will be to discover what variables drive quality in red wine.
+
+
+### What other features in the dataset do you think will help support your \
+investigation into your feature(s) of interest? 
+
+The correlation between variables. Even though correlation doesn't mean causation, It would be very interesting to know the tendencies between the red wine measurments and the overall quality of red wine in the dataset.
+
+### Did you create any new variables from existing variables in the dataset? 
+I created a new value called q_rating, which I eventually added to the dataset redInfo. Q_rating is basically a categorical subquality for all of quality entries of red wine from 1 through 8. A score lower than 5 is considered poor. A score between 5 and 6 is considered average. A score of 7 and above is considered excellent.
+
+### Of the features you investigated, were there any unusual distributions? \
+Did you perform any operations on the data to tidy, adjust, or change the form \
+of the data? If so, why did you do this? 
+
+
+I did change the form of that data by using scale_x_contiunious and changing to the appropriate binwidths based on the variable. It was used to get a better look of the distribution as well as getting rid of outliers. Most variables were rightly skewed. 
+
+
+
+--------------------
+
+# Bivariate Plots Section
+
+
+```{r echo = FALSE, Creating_Correlation_Plot}
+cor_redInfo <- cor(redInfo) 
+```
+
+
+ ``` {r echo=FALSE, Bivariate_Plots,  fig.width=8, fig.height=8}
+
+corrplot(cor_redInfo, order = 'AOE', method='color', 
+addCoef.col = 'Gray')
+
+
+```{r echo = FALSE, Bivariate_Plots_cont}
+
+#Boxplot and Summary for Quality Rating and Alcohol
+qplot(x =factor(q_rating), y = alcohol, 
+      data= redInfo,
+      main = 'Quality Rating based on Alcohol %',
+      xlab = 'Quality Rating',
+      ylab = 'Alcohol [%]',
+      geom = 'boxplot') 
+
+by(redInfo$alcohol, q_rating, summary)
+
+#Boxplot and Summary for Quality Rating and Sulphates
+qplot(x =factor(q_rating), y = sulphates, 
+      data= redInfo,
+      main = 'Quality Rating based on Sulphates',
+      xlab = 'Quality Rating',
+      geom = 'boxplot') 
+      
+by(redInfo$sulphates, q_rating, summary)
+
+#Boxplot and Summary for Quality Rating and Citric Acid
+qplot(x =factor(q_rating), y = citric.acid, 
+      data= redInfo,
+      main = 'Quality Rating based on Citric Acid',
+      xlab = 'Quality Rating',
+      ylab = 'Citric Acid',
+      geom = 'boxplot') 
+
+by(redInfo$citric.acid, q_rating, summary)
+
+#Boxplot and Summary for Quality Rating and Volatile Acidity
+qplot(x =factor(q_rating), y = volatile.acidity, 
+      data= redInfo,
+      main = 'Quality Rating based on Volatile Acidity',
+      xlab = 'Quality Rating',
+      ylab = 'Volatile Acidity',
+      geom = 'boxplot') 
+
+by(redInfo$volatile.acidity, q_rating, summary)
+
+#Scatterplot and Summary for Density and Fixed Acidity
+ggplot(aes(x = density, y = fixed.acidity), 
+data = redInfo) +
+geom_jitter( alpha = 1/5, position = 'jitter') +
+stat_smooth(method = 'lm') +
+labs(title = 'Density and Fixed Acidity Scatterplot',
+y = 'Fixed Acidity',
+x = 'Density')
+
+cor(redInfo$density, redInfo$fixed.acidity)
+
+#Scatterplot and Summary for pH and Fixed Acidity
+ggplot(aes(x = pH, y = fixed.acidity), data = redInfo) +
+geom_jitter( alpha = 1/6, position = 'jitter') +
+stat_smooth(method = 'lm') +
+labs(title = 'pH and Fixed Acidity Scatterplot',
+y = 'Fixed Acidity')
+
+cor(redInfo$pH, redInfo$fixed.acidity)
+
+#Scatterplot and Summary for Total Sulfur Dioxide and Free Sulfur Dioxide
+ggplot(aes(x = total.sulfur.dioxide, y = free.sulfur.dioxide), 
+data = redInfo) +
+geom_jitter( alpha = 1/6, position = 'jitter') +
+stat_smooth(method = 'lm') +
+coord_trans(y='sqrt') +
+labs(title = 'Total Sulfur Dioxide
+and Free Sulfur Dioxide Scatterplot',
+x = 'Total Sulfur Dioxide',
+y = 'Free Sulfur Dioxide' )
+
+cor(redInfo$total.sulfur.dioxide, redInfo$free.sulfur.dioxide)
+
+
+
+```
+
+# Bivariate Analysis
+
+### Talk about some of the relationships you observed in this part of the \
+investigation. How did the feature(s) of interest vary with other features in \
+the dataset?
+
+My feature of interest is determing what are the main factors that contribute to the quality of wine in the dataset.It seems that the wine has 4 variables that play a very considerable role in terms of having a good quality soce. Those variable are : alcohol, volatile.acidity, citric.acid, and sulphates.
+
+As someone who doesn't drink or have any initial knowledge about wine, I wasn't expecting anything particularly. Before plotting anything, I decided to make a correlation plot between all variables. I believed that it would give me some sense of direction to analyze and explore them. The  charts, referenced by the variable pairings below, represents the variables that had high correlations, specifically for the variable quality.
+
+Since quality was the most important factor, it was important that I find and analyze the variables that had a considerably high corelation with it. 4 variables stood out: Alcohol, citric acid, volatile acidity, and sulphates. Other variable pairings that didn't involve quality were considered eye opening as well such as total sulfurdioxide and free sulfur dioxide , pH and fixed acidity, and density and fixed acidity. Even though these variable correlation pairing were not my area of focus, I believed that it could be very helpful in the multivariate section. Below is a description of the variable pairings that had a considerably high correlation with the variable quality. 
+
+**Quality Rating and Alcohol**
+There is a .48 correlation between alcohol and quality rating.
+According the the boxplot, red wines with more alcohol content tend to have better quality scores. For poor and average scores, the median for alcohol is 10.00, but for excellent scores the median is 11.60. The mean for alcohol in excellent scores is 11.52, which is higher than the mean for poor, average, and total average quality scores.
+
+**Quality Rating and Volatile Acidity**
+There is a -0.39 correlation between volatile acidity and quality rating. Accroding to the boxplot, the higher the quality rating, the less volatile acidity the red wine has.Too much volatile acid can turn the wine into vinegar (or give it a vinegar-like taste). Poor rated wines had the highest median and mean scores of .68 and .724 respectively. Average rated wines have a the second highest median and mean scores of .54 and .5386 respectively. The excellent rated red wines, had the lowest and best median and mean scores of .37 and .4055.
+
+**Quality Rating and Sulphates**
+There is a .25 correlation between quality rating and sulphates. According to the boxplot, better quality ratings tend to have more sulphates in the red wine.Sulphates (sulfur dioxide (SO2)), is a preservative that's widely used in winemaking (and most food industries) for its antioxidant and antibacterial properties.The excellent quality red wines had  median and mean scores of .74 and .7435 respectively while the poor quality red wines had scores of .56 and .5922.
+
+**Quality Rating and Citric Acid**
+There is a .23 correlation between quality rating and citric acid. According the the boxplot, better quality rattings tend to have more citric acid in the red wine.Citric acid is produced with the help of special mold and used as a flavor enhancer and preservative in food. The excellent quality red wines had  median and mean scores of .4 and .3765 respectively while the poor quality red wines had scores of .0800 and .1737.
+
+
+### Did you observe any interesting relationships between the other features \
+(not the main feature(s) of interest)?
+
+Due to high positive and negative correltions, I also took interest in these correlated variables: total.sulfur.dioxide and free sulfur dioxide (positively correlated with 0.668), pH and fixed acidity ( negatively correlated with -0.683), and density and fixed acidity (positively correlated with 0.668). 
+
+
+
+### What was the strongest relationship you found?
+
+The strongest relationship was between Fixed Acidity and pH, which had a correlation coefficient of -0.683.
+
+# Multivariate Plots Section
+
+
+```{r echo=FALSE, Multivariate_Plots}
+
+# Adding Quality rating to the dataset
+redInfo$q_rating <- ifelse(redInfo$quality < 5, 'poor',ifelse(redInfo$quality < 7, 'average', 
+  ifelse(redInfo$quality > 6, 'excellent', 'none')))
+
+#Ordering Subqualities
+redInfo$q_rating<- ordered(q_rating, 
+levels = c('poor', 'average', 'excellent'))
+
+# Citric Acid and Fixed Acidity based on Quality Rating
+ggplot(data = redInfo,
+       aes(x = citric.acid, y = fixed.acidity)) +
+  geom_point(aes(colour = factor(quality))) + 
+  facet_wrap(~q_rating) +
+  labs( title = 'Citric acid and Fixed Acidity
+  based on Quality Rating',x = 'Citric Acid',
+  y ='Fixed Acidity')
+
+#Density and Alcohol based on Quality Rating
+ggplot(data = redInfo,
+       aes(x = density, y = alcohol)) +
+  geom_point(aes(colour = factor(quality))) + 
+  facet_wrap(~q_rating) +
+  labs(title = 'Alcohol % and Density
+  based on Quality Rating',
+  x = 'Density',y = 'Alcohol [%]')
+
+
+#Citric Acid and Alcohol based on Quality Rating
+ggplot(data = redInfo,
+       aes(x = citric.acid, y = alcohol)) +
+  geom_point(aes(colour = factor(quality))) + 
+  facet_wrap(~q_rating) +
+  labs(x = 'Citric Acid',y = 'Alcohol [%]',
+  title = 'Citric Acid and Alcohol % 
+  based on Quality Rating')
+
+
+#Sulphates and Volatile Acidity based on Quality Rating
+ggplot(data = redInfo,
+       aes(x = sulphates, y = volatile.acidity)) +
+  geom_point(aes(colour = factor(quality))) + 
+  facet_wrap(~q_rating) +
+  labs(x = 'Sulphates',
+  y = 'Volatile Acidity',
+  title = 'Sulphates and Volatile Acidity
+  based on Quality Rating')
+
+
+
+
+
+
+```
+
+# Multivariate Analysis
+
+### Talk about some of the relationships you observed in this part of the \
+investigation. Were there features that strengthened each other in terms of \
+looking at your feature(s) of interest?
+
+I wanted to take a closer look at variables from the bivariate section that were the main features of interest due to their relationship with the quality variable and their high correlations.
+
+In the Bivariate section of this project, I learned that quality had a considerable correlation with 4 different variables. The next step was to see how these 4 variables ( Citric Acid, Volatile Acidity, Alcohol %, and Sulphates) correlated with each other by looking at the correlation plot in the last section to see their relationship with quality. 
+
+I expected to find two pairs of considerable correlations between the two variables and was successful: the pairs of Sulphates and Volatile Acidity, and Citric Acid and Alcohol. There were some other pairs worth exploring that I've found to have high correlations as well: Density and Alcohol as well as Fixed Acidity and Citric Acid.
+
+**Fixed Acidity and Citric Acid based on Quality**
+There is a .67 correlation between fixed acidity and citric acid. Both of these variables had considerable correlations individually with quality so I decided to plot them both using the quality rating variable. According to the plot, the red wines with higher citric acid tended to have higher fixed acidity measurables. Excellent wines tend to have citric acid content betwen .30 and .50 and higher concentrations of fixed acidity. Average wines had a median score of 7.8 but did not have high concentrations of fixed acidity. The red wins that did have high concentrations were wines that had a rating of 6.
+
+
+**Density And Alcohol based on Quality**
+There is an obvious relationshion between density and alcohol based on quality. Excellent red wines had the lowest median and average scores in terms of density, but hat the most alcohol content which was expected.Based on the plot, average red wines show a considerable amount of density while also having lower alcohol content. Wine judgers could be biased and would prefer wine that is less dense and has good amount of alcohol content.
+
+**Citric Acid and Alcohol based on Quality**
+Alcohol content and citric acid aren't highly correlated but there is a positive relationship between the two variables. poor quality red wines tended to be lower in alcohol content and citric acid. Alcohol content made average wines taste better regardless of citric acid content. Excellent wines tended to be higher in alcohol content and citric acid. A trend is also noticable in this plot as well. poor red wines tend to have low citric acid scores and low alcohol content. From poor to excellent, the trend seems to go upward. Alcohol plays an important role in determining the quality of wine.
+
+**Sulphates and Volatile Acidity based on Quality**
+Poor wines tend to have high rates volatile acidity while having a low amount of sulphates. The plot shows a trent. for each subquality, it tends to decrease. Average wines have a lower volatile acidity than poor wines , but have higher rates of sulphates. Out of all subquality ratings, excellent red wines had lower sulphates and low volatile acidity. This would be a revelation for determining what really makes a poor red wine and great wine. 
+
+**
+
+
+### Were there any interesting or surprising interactions between features?
+
+The plot involving sulphates and volatile acidity is pretty interesting. It was an impressive graph because it clearly showed a trend between the subqualities that couldn't go unnoticed. the better the subquality, the lower the points on the graph went. in this specific graph, excelent wines had lower sulphates and lower volatile acidity than it's othe subquality counterparts. The relationship between citric acid and alcohol is considered important as well. 
+
+------
+
+# Final Plots and Summary
+
+### Plot One
+```{r echo=FALSE, Plot_One}
+qplot(q_rating, xlab="Quality Rating",
+      main = 'Quality Rating Count',color = I('gold'), 
+      fill = I('purple'))
+```
+
+### Description One
+Plot One was intersting because it basically shows how wine judgers are quick to give the quality of red wine a score of either 5 or 6, which would be considered average. Based on this data set, it shows that there were very few poor wines and excellent wines. A wine quality score of 7 or greater is considered excellent and a great achievement.
+
+### Plot Two
+```{r echo=FALSE, Plot_Two, fig.width=8, fig.height=8}
+corrplot(cor_redInfo, main = 'Correlation Plot',order = 'AOE',
+method='color',
+addCoef.col = 'Gray') 
+
+```
+
+### Description Two
+Plot 2 describes a beautiful correlation plot between all variables, and is why I chose it. My main interest was quality and it was interesting to see that it had considerable correlations with the variables volatile acidity, alcohol, citric acid, and sulphates. There were also positive correlations between variables that weren't initially my main focus. Those correlations were: free sulfur dioxide and total sulfur dioxide, fixed acidity and density, and fixed acidity and pH. 
+
+### Plot Three
+```{r echo=FALSE, Plot_Three}
+qplot(x =factor(q_rating), y = alcohol, 
+      xlab = 'Quality Rating',
+      ylab = 'Alcohol [%]',
+      main = 'Quality Rating based on Alcohol %',
+      data= redInfo,
+      geom = 'boxplot') 
+```
+
+### Description Three
+Plot three is a boxplot of alcohol based on quality rating and it basically shows how alcohal content played a big role in the rating. excellent quality ratings, which are scores 7 and above had a mean of 11.52 compared to the means of poor and average scores of 10.22 and 10.25 respectively. 
+
+------
+
+# Reflection
+
+
+The red wine data set contained 1,599 observations of red wine along with 13 variables. Throughout this project, I wanted to discover what drove the quality of wine and what factors took place that had much to do with the wine's quality score. I've learned that most wine judgers gave the red wine in the dataset scores of either 5 or 6, which is consdered average.
+
+Alcohol content appears to be the biggest factor in determing excelent wine, which was the most surprising in my opinion. It's safe to say that wine judgers like larger amounts of alcohol content in their wine, which causes more euphoria.The amount of citric acid in wine also make a big difference for quality. The more citric acid the wine has the more likely it would also have a considerable amount of alcohol content.
+
+Volatile Acidity in wine plays a role in quality as well. Poor wines tend to have high volatile acidity scores and  becomes lower for each subquality. This means that too much volatile acidity is bad for wine, period. Average wines have a lower volatile acidity than poor wines, but have higher rates of sulphates. Out of all subquality ratings, excellent red wines had lower sulphates and low volatile acidity. This would be a revelation for determining what really makes a poor red wine and great wine. 
+
+Believe or not, criteria for anything is usually biased because it was created by the predferences of people. The criteria for this dataset and what caused excellent wine scores could be totally different from other datasets when making discoveries about the data. Having a bigger sample of red wine data could possibly shed some light on what truly plays a role in great red wine. Surveys from customer populations would beinteresting because it gives a different perspective on the matter. not only does it give a different perspective, but it can also predict what customers prefer when purchasing red wine.
+
+#Any Struggles?
+
+There wern't as many strong correlations between a wide variety of variable in this dataset. In my opinion, I believe that there could/should be more variables that could support the factors that support qualty for red wine.  Luckily, it wasn't too difficult to see what contributes to red wine because of the correlation plot.
